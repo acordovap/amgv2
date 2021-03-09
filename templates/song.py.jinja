@@ -1,0 +1,67 @@
+from shared import config as CFG
+from spade import quit_spade
+from aioxmpp import PresenceState, PresenceShow
+from spade.behaviour import FSMBehaviour, State
+from spade.agent import Agent
+from mingus.containers import Track
+from spade.template import Template
+
+S_RECEIVE       = "S_RECEIVE"
+S_PUBLISH_SONG  = "S_PUBLISH_SONG"
+S_FINISHED      = "S_FINISHED"
+
+class SongAgent(Agent):
+    async def setup(self):
+        fsm = SongBehaviour()
+        fsm.add_state(name=S_RECEIVE, state=SReceiveState(), initial=True)
+        fsm.add_state(name=S_PUBLISH_SONG, state=SPublishSongState())
+        fsm.add_state(name=S_FINISHED, state=SFinishedState())
+        fsm.add_transition(source=S_RECEIVE, dest=S_RECEIVE)
+        fsm.add_transition(source=S_RECEIVE, dest=S_PUBLISH_SONG)
+        fsm.add_transition(source=S_PUBLISH_SONG, dest=S_FINISHED)
+        fsm.add_transition(source=S_FINISHED, dest=S_FINISHED)
+        {%- for track in tracks %}
+        {{ track }}_template = Template()
+        {{ track }}_template.set_metadata("performative", "{{ track }}")
+        self.set("{{ track }}_template", {{ track }}_template)
+        {%- endfor %}
+        self.add_behaviour(fsm, {%- for track in tracks %} {{ track }}_template {{ "|" if not loop.last}} {%- endfor %})
+        self.add_behaviour(fsm)
+
+class SongBehaviour(FSMBehaviour):
+    async def on_start(self):
+        {%- for track in tracks %}
+        self.agent.set("{{ track }}_track", Track())
+        {%- endfor %}
+
+class SReceiveState(State):
+    async def on_start(self):
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
+        self.agent.presence.set_presence(status="[" + {%- for track in tracks %} repr(self.agent.get("{{ track }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "]")
+
+    async def run(self):
+        while True:
+            print(self.agent.presence.status)
+            #pass
+        self.set_next_state(S_RECEIVE)
+
+class SPublishSongState(State):
+    async def on_start(self):
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
+        self.agent.presence.set_presence(status="publishing")
+
+    async def run(self):
+        while True:
+            pass
+        self.set_next_state(S_PUBLISH_SONG)
+
+
+class SFinishedState(State):
+    async def on_start(self):
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
+        self.agent.presence.set_presence(status="finishing")
+
+    async def run(self):
+        while True:
+            pass
+        self.set_next_state(S_FINISHED)
