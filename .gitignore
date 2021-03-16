@@ -1,6 +1,8 @@
 __pycache__/
  *.pyc
 
+main.py
+
 agents/*
 !agents/.keep
 
