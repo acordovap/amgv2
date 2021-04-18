@@ -2,6 +2,7 @@ __pycache__/
  *.pyc
 
 main.py
+setup.py
 
 agents/*
 !agents/.keep
