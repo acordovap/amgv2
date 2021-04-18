@@ -1,8 +1,7 @@
-import os
-import glob
 from jinja2 import Environment, FileSystemLoader
 
-notes = [os.path.basename(x)[2:-3] for x in glob.glob('./agents/n_*')]
+songs = ["s_0", "s_1"]
+notes = ["n_C5"]
 
 file_loader = FileSystemLoader('templates')
 env = Environment(loader=file_loader)
@@ -12,6 +11,6 @@ env = Environment(loader=file_loader)
 
 template = env.get_template('main.py.jinja')
 
-template.stream(notes=notes).dump('main.py')
+template.stream(notes=notes, songs=songs).dump('main.py')
 # output = template.render(notes = notes)
 # print(output)

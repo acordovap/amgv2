@@ -11,17 +11,16 @@ from spade import quit_spade
 if __name__ == "__main__":
 
     # init songs
-    # s = []
-    # for i in range(CFG.no_songs):
-    #     jid1 = "s_" + str(i) + CFG.XMPP_SERVER
-    #     passwd1 = "."
-    #     s.append(SongAgent(jid1, passwd1) )
-    #     s[i].start().result()
+    s = []
+    {%- for song in songs %}
+    s.append(SongAgent("{{ song }}"+CFG.XMPP_SERVER, "."))
+    s[-1].start().result()
+    {%- endfor %}
 
     # init notes
     {%- for note in notes %}
-    n_{{ note }} = Note_{{ note }}("n_{{note}}"+CFG.XMPP_SERVER, ".")
-    n_{{ note }}.start().result()
+    {{ note }} = Note_{{ note }}("{{ note }}"+CFG.XMPP_SERVER, ".")
+    {{ note }}.start().result()
     {%- endfor %}
 
     # FLAG for start receiving messages on song agents?

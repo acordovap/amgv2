@@ -28,8 +28,6 @@ class SongAgent(Agent):
         self.add_behaviour(fsm, {%- for track in tracks %} {{ track }}_template {{ "|" if not loop.last}} {%- endfor %})
         self.add_behaviour(fsm)
 
-# missing behav to accept contact (un)subscriptions
-
 class SongBehaviour(FSMBehaviour):
     async def on_start(self):
         {%- for track in tracks %}
