@@ -1,0 +1,53 @@
+from shared import config as CFG
+from spade.behaviour import OneShotBehaviour
+import time
+from spade import quit_spade
+from spade.agent import Agent
+
+class Setup_Songs(Agent):
+    async def setup(self):
+        print("<Setup_Songs> {}".format(str(self.jid).split("@")[0]))
+        self.add_behaviour(self.AcceptSubscriptions())
+
+    class AcceptSubscriptions(OneShotBehaviour):
+        def on_subscribe(self, jid):
+            print("[{}] Agent {} asked for subscription. Let's aprove it.".format(self.agent.name, jid.split("@")[0]))
+            self.presence.approve(jid)
+
+        async def run(self):
+            self.presence.on_subscribe =  self.on_subscribe
+            self.presence.set_available()
+
+class Setup_Notes(Agent):
+    async def setup(self):
+        print("<Setup_Notes> {}".format(str(self.jid).split("@")[0]))
+        self.add_behaviour(self.AskSubscription())
+
+    class AskSubscription(OneShotBehaviour):
+        async def run(self):
+            #ver si no esta en contactos acutalmente para cada uno
+            {%- for song in songs %}
+            self.presence.subscribe("{{ song }}" + CFG.XMPP_SERVER)
+            {%- endfor %}
+            # apagar agente (posiblemente en handler de subscribido)
+
+if __name__ == "__main__":
+    # Songs
+    {%- for song in songs %}
+    {{ song }} = Setup_Songs("{{ song }}"+CFG.XMPP_SERVER, ".")
+    {{ song }}.start().result()
+    {%- endfor %}
+
+    # Notes
+    {%- for note in notes %}
+    {{ note }} = Setup_Notes("{{ note }}"+CFG.XMPP_SERVER, ".")
+    {{ note }}.start().result()
+    {%- endfor %}
+
+    while True:
+        try:
+            # si no hay notas quit
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
+    quit_spade()
