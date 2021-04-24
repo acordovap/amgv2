@@ -1,0 +1,196 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "definitions": {
+        "song": {
+            "allOf": [
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_name" },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_tempo" },
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_key_signature" },
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_time_signature" },
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_progressions" },
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/s_tracks" },
+                    "minItems": 1
+                }
+            ]
+        },
+        "s_name": {
+            "type": "object",
+            "properties": {
+                "s_name": { "type": "string" }
+            },
+            "required": ["s_name"]
+        },
+        "s_tempo": {
+            "type": "object",
+            "properties": {
+                "s_tempo": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "required": ["s_tempo"]
+        },
+        "s_key_signature": {
+            "type": "object",
+            "properties": {
+                "s_key_signature": {
+                    "type": "string",
+                    "enum": ["Cb", "ab", "Gb", "eb", "Db", "bb", "Ab", "f", "Eb", "c", "Bb", "g", "F", "d", "C", "a", "G", "e", "D", "b", "A", "f#", "E", "c#", "B", "g#", "F#", "d#", "C#", "a#"]
+                }
+            },
+            "required": ["s_key_signature"]
+        },
+        "s_time_signature": {
+            "type": "object",
+            "properties": {
+                "s_time_signature": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                }
+            },
+            "required": ["s_time_signature"]
+        },
+        "s_progressions": {
+            "type": "object",
+            "properties": {
+                "s_progressions": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "string",
+                            "enum": ["I", "II", "III", "IV", "V", "VI", "VII"]
+                        }
+                    ],
+                    "minItems": 1
+                }
+            },
+            "required": ["s_progressions"]
+        },
+        "s_tracks": {
+            "type": "object",
+            "properties": {
+                "s_tracks": { "$ref": "#/definitions/track" }
+            },
+            "required": ["s_tracks"]
+        },
+        "track": {
+            "allOf": [
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/t_name" },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/t_notes" },
+                    "minItems": 1
+                }
+            ]
+        },
+        "t_name": {
+            "type": "object",
+            "properties": {
+                "t_name": { "type": "string" }
+            },
+            "required": ["t_name"]
+        },
+        "t_notes": {
+            "type": "object",
+            "properties": {
+                "t_notes": { "$ref": "#/definitions/note" }
+            },
+            "required": ["t_notes"]
+        },
+        "note": {
+            "allOf": [
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/n_name" },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/n_behavs" },
+                    "minItems": 1
+                }
+            ]
+        },
+        "n_name": {
+            "type": "object",
+            "properties": {
+                "n_name": { "type": "string" }
+            },
+            "required": ["n_name"]
+        },
+        "n_behavs": {
+            "type": "object",
+            "properties": {
+                "n_behavs": { "$ref": "#/definitions/behaviour" }
+            },
+            "required": ["n_behavs"]
+        },
+        "behaviour": {
+            "allOf": [
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/b_name" },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/b_cmd" },
+                    "minItems": 1
+                }
+            ]
+        },
+        "b_name": {
+            "type": "object",
+            "properties": {
+                "b_name": { "type": "string" }
+            },
+            "required": ["b_name"]
+        },
+        "b_cmd": {
+            "type": "object",
+            "properties": {
+                "b_cmd": { "type": "string" }
+            },
+            "required": ["b_name"]
+        }
+    },
+    "$ref": "#/definitions/song"
+}
