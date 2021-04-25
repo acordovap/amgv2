@@ -10,12 +10,18 @@ from spade.message import Message
 
 class Note_{{ note }}(Agent):
     async def setup(self):
-        self.add_behaviour(self.sendNote())
+        ##missing attribute for state of song
+        {%- for behav in behavs %}
+        self.add_behaviour(self.{{ behav["b_name"] }}())
+        {%- endfor %}
 
-    class sendNote(CyclicBehaviour):
+    {% for behav in behavs %}
+    class {{ behav["b_name"] }}(CyclicBehaviour):
         async def run(self):
             contacts = self.presence.get_contacts()
-            for i in range(CFG.no_songs):
+            #check song online and chat, check state differ from last
+                # insert lark result?
+            # for i in range(CFG.no_songs): # no deeded
                 # if contacts[aioxmpp.JID.fromstr("s_" + i.lower() + CFG.XMPP_SERVER)]["presence"].show == PresenceShow.CHAT:
                     # msg = Message(to="n_" + i.lower() + CFG.XMPP_SERVER)     # Instantiate the message
                     # msg.set_metadata("performative", "notepitch")  # Set the "notes" FIPA performative
@@ -23,3 +29,4 @@ class Note_{{ note }}(Agent):
                     # await self.send(msg)
                 print("sending msg")
                 await asyncio.sleep(random.randint(1, 10)/1000)
+    {% endfor %}
