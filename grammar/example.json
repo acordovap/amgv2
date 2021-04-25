@@ -1,0 +1,75 @@
+[
+    {
+        "s_name": "s0",
+        "s_tempo": 120,
+        "s_key_signature": "C",
+        "s_time_signature": [2,3],
+        "s_progressions": ["I", "II"],
+        "s_tracks": [
+            {
+                "t_name": "t0",
+                "t_notes": [
+                    {
+                        "n_name": "C-5",
+                        "n_behavs": [
+                            {
+                                "b_name": "b0",
+                                "b_cmd": "cmd0"
+                            },
+                            {
+                                "b_name": "b1",
+                                "b_cmd": "cmd1"
+                            }
+                        ]
+                    },
+                    {
+                        "n_name": "C-6",
+                        "n_behavs": [
+                            {
+                                "b_name": "b0",
+                                "b_cmd": "cmd0"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "t_name": "t1",
+                "t_notes": [
+                    {
+                        "n_name": "C-5",
+                        "n_behavs": [
+                            {
+                                "b_name": "b0",
+                                "b_cmd": "cmd0"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "s_name": "s1",
+        "s_tempo": 120,
+        "s_key_signature": "f#",
+        "s_time_signature": [1,2],
+        "s_progressions": ["I"],
+        "s_tracks": [
+            {
+                "t_name": "t0",
+                "t_notes": [
+                    {
+                        "n_name": "C-5",
+                        "n_behavs": [
+                            {
+                                "b_name": "b0",
+                                "b_cmd": "cmd0"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
