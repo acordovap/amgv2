@@ -1,0 +1,25 @@
+[
+    {
+        "s_name": "s0",
+        "s_tempo": 120,
+        "s_key_signature": "C",
+        "s_time_signature": [4,4],
+        "s_progressions": ["I", "IV", "V", "I"],
+        "s_tracks": [
+            {
+                "t_name": "t0",
+                "t_notes": [
+                    {
+                        "n_name": "C-5",
+                        "n_behavs": [
+                            {
+                                "b_name": "b0",
+                                "b_cmd": "cmd0"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
