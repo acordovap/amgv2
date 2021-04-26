@@ -10,7 +10,8 @@ S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
 S_FINISHED      = "S_FINISHED"
 
-class SongAgent(Agent):
+#change songagent
+class Song_{{ song }}(Agent):
     async def setup(self):
         fsm = SongBehaviour()
         fsm.add_state(name=S_RECEIVE, state=SReceiveState(), initial=True)
