@@ -5,7 +5,7 @@ from agents.{{ song["s_name"] }} import *
 {%- for song in songs %}
 {%- for track in song["s_tracks"] %}
 {%- for note in track["t_notes"] %}
-from agent.{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"] }} import *
+from agents.{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }} import *
 {%- endfor %}
 {%- endfor %}
 {%- endfor %}
