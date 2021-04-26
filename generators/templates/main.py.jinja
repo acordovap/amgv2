@@ -1,30 +1,37 @@
 from shared import config as CFG
-from agents.song import *
-{%- for note in notes %}
-from agents.n_{{ note }} import *
+{%- for song in songs %}
+from agents.{{ song["s_name"] }} import *
 {%- endfor %}
-
+{%- for song in songs %}
+{%- for track in song["s_tracks"] %}
+{%- for note in track["t_notes"] %}
+from agent.{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"] }} import *
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
 import time
-
 from spade import quit_spade
 
 if __name__ == "__main__":
-
     # init songs
     s = []
     {%- for song in songs %}
-    s.append(SongAgent("{{ song }}"+CFG.XMPP_SERVER, "."))
+    s.append(Song_{{ song["s_name"] }}("{{ song["s_name"] }}"+CFG.XMPP_SERVER, "."))
     s[-1].start().result()
     {%- endfor %}
 
     # init notes
-    {%- for note in notes %}
-    {{ note }} = Note_{{ note }}("{{ note }}"+CFG.XMPP_SERVER, ".")
-    {{ note }}.start().result()
+    n = []
+    {%- for song in songs %}
+    {%- for track in song["s_tracks"] %}
+    {%- for note in track["t_notes"] %}
+    n.append( Notes_{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }}("{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }}"+CFG.XMPP_SERVER, ".") )
+    n[-1].start().result()
+    {%- endfor %}
+    {%- endfor %}
     {%- endfor %}
 
     # FLAG for start receiving messages on song agents?
-
     while True:
         try:
             # falta poner wait de songs
