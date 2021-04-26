@@ -10,7 +10,6 @@ S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
 S_FINISHED      = "S_FINISHED"
 
-#change songagent
 class Song_{{ song["s_name"] }}(Agent):
     async def setup(self):
         fsm = SongBehaviour()
@@ -34,11 +33,17 @@ class SongBehaviour(FSMBehaviour):
         {%- for track in song["s_tracks"] %}
         self.agent.set("{{ track["t_name"] }}_track", Track())
         {%- endfor %}
+        self.agent.set("s_name", "{{ song["s_name"] }}")
+        self.agent.set("s_tempo", {{ song["s_tempo"] }})
+        self.agent.set("s_key_signature", "{{ song["s_key_signature"] }}")
+        self.agent.set("s_time_signature", {{ song["s_time_signature"] }})
+        self.agent.set("s_progressions", {{ song["s_progressions"] }})
 
 class SReceiveState(State):
     async def on_start(self):
         self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
-        self.agent.presence.set_presence(status="[" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "]")
+        attrs = "[" + self.agent.get("s_name")+", "+self.agent.get("s_tempo")+", "+self.agent.get("s_key_signature")+", "+self.agent.get("s_time_signature")+", "+self.agent.get("s_progressions")+ "]"
+        self.agent.presence.set_presence(status="[" + attrs + ",[" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
 
     async def run(self):
         while True:
