@@ -3,6 +3,8 @@ from spade.behaviour import OneShotBehaviour
 import time
 from spade import quit_spade
 from spade.agent import Agent
+from aioxmpp import PresenceState, PresenceShow
+import aioxmpp
 
 class Setup_Songs(Agent):
     async def setup(self):
@@ -23,12 +25,19 @@ class Setup_Notes_{{ song["s_name"] }}(Agent):
     async def setup(self):
         print("<Setup_Notes> {}".format(str(self.jid).split("@")[0]))
         self.add_behaviour(self.AskSubscription())
+        self.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
 
     class AskSubscription(OneShotBehaviour):
+        def on_subscribed(self, jid):
+            print("[{}] Agent {} has accepted the subscription.".format(self.agent.name, jid.split("@")[0]))
+            self.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
+
         async def run(self):
-            #ver si no esta en contactos acutalmente
-            self.presence.subscribe("{{ song["s_name"] }}" + CFG.XMPP_SERVER)
-            # apagar agente (posiblemente en handler de subscribido)
+            self.presence.on_subscribed =  self.on_subscribed
+            if aioxmpp.JID.fromstr("{{ song["s_name"] }}"+CFG.XMPP_SERVER) in self.agent.presence.get_contacts():
+                self.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
+            else:
+                self.presence.subscribe("{{ song["s_name"] }}" + CFG.XMPP_SERVER)
 {% endfor %}
 
 if __name__ == "__main__":
@@ -39,19 +48,22 @@ if __name__ == "__main__":
     {%- endfor %}
 
     # Notes
+    n = []
     {%- for song in songs %}
     {%- for track in song["s_tracks"] %}
     {%- for note in track["t_notes"] %}
-    {{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }} = Setup_Notes_{{ song["s_name"] }}("{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }}"+CFG.XMPP_SERVER, ".")
-    {{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }}.start().result()
+    n.append( Setup_Notes_{{ song["s_name"] }}("{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-', '') }}"+CFG.XMPP_SERVER, ".") )
+    n[-1].start().result()
     {%- endfor %}
     {%- endfor %}
     {%- endfor %}
 
-    while True:
+    keepgoing = True
+    while keepgoing:
         try:
-            # si no hay notas quit
+            keepgoing = not all(i.presence.state.show == PresenceShow.AWAY for i in n)
             time.sleep(1)
         except KeyboardInterrupt:
             break
     quit_spade()
+    print("Finished setup")
