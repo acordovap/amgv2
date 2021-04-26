@@ -25,7 +25,7 @@ if v:
                 template.stream(song=s["s_name"], track=t["t_name"], note=n["n_name"], behavs=b_list).dump('agents/'+s["s_name"]+'_'+t["t_name"]+'_'+n["n_name"]+'.py')
         # Generate songs agents
         template = env.get_template('song.py.jinja')
-        template.stream(tracks=t_list, song=s["s_name"]).dump('agents/'+s["s_name"]+'.py')
+        template.stream(song=s).dump('agents/'+s["s_name"]+'.py')
     # Generate setup
     template = env.get_template('setup.py.jinja')
     template.stream(songs=jdata).dump('setup.py')

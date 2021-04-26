@@ -11,7 +11,7 @@ S_PUBLISH_SONG  = "S_PUBLISH_SONG"
 S_FINISHED      = "S_FINISHED"
 
 #change songagent
-class Song_{{ song }}(Agent):
+class Song_{{ song["s_name"] }}(Agent):
     async def setup(self):
         fsm = SongBehaviour()
         fsm.add_state(name=S_RECEIVE, state=SReceiveState(), initial=True)
@@ -21,24 +21,24 @@ class Song_{{ song }}(Agent):
         fsm.add_transition(source=S_RECEIVE, dest=S_PUBLISH_SONG)
         fsm.add_transition(source=S_PUBLISH_SONG, dest=S_FINISHED)
         fsm.add_transition(source=S_FINISHED, dest=S_FINISHED)
-        {%- for track in tracks %}
-        {{ track }}_template = Template()
-        {{ track }}_template.set_metadata("performative", "{{ track }}")
-        self.set("{{ track }}_template", {{ track }}_template)
+        {%- for track in song["s_tracks"] %}
+        {{ track["t_name"] }}_template = Template()
+        {{ track["t_name"] }}_template.set_metadata("performative", "{{ track["t_name"] }}")
+        self.set("{{ track["t_name"] }}_template", {{ track["t_name"] }}_template)
         {%- endfor %}
-        self.add_behaviour(fsm, {%- for track in tracks %} {{ track }}_template {{ "|" if not loop.last}} {%- endfor %})
+        self.add_behaviour(fsm, {%- for track in song["s_tracks"] %} {{ track["t_name"] }}_template {{ "|" if not loop.last}} {%- endfor %})
         self.add_behaviour(fsm)
 
 class SongBehaviour(FSMBehaviour):
     async def on_start(self):
-        {%- for track in tracks %}
-        self.agent.set("{{ track }}_track", Track())
+        {%- for track in song["s_tracks"] %}
+        self.agent.set("{{ track["t_name"] }}_track", Track())
         {%- endfor %}
 
 class SReceiveState(State):
     async def on_start(self):
         self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
-        self.agent.presence.set_presence(status="[" + {%- for track in tracks %} repr(self.agent.get("{{ track }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "]")
+        self.agent.presence.set_presence(status="[" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "]")
 
     async def run(self):
         while True:
