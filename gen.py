@@ -21,14 +21,14 @@ if v:
                 for b in n["n_behavs"]:
                     b_list.append(b)
                 # Generate notes agents
-                #print('agents/'+s["s_name"]+'_'+t["t_name"]+'_'+n["n_name"]+'.py')
                 template = env.get_template('note.py.jinja')
                 template.stream(song=s["s_name"], track=t["t_name"], note=n["n_name"], behavs=b_list).dump('agents/'+s["s_name"]+'_'+t["t_name"]+'_'+n["n_name"]+'.py')
-            template = env.get_template('setup.py.jinja')
-            #template.stream(notes=n_list, songs=songs).dump('setup.py')
         # Generate songs agents
         template = env.get_template('song.py.jinja')
         template.stream(tracks=t_list).dump('agents/'+s["s_name"]+'.py')
+    # Generate setup
+    template = env.get_template('setup.py.jinja')
+    template.stream(songs=jdata).dump('setup.py')
 
 else:
     print("Given JSON data is InValid")
