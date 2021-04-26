@@ -8,7 +8,7 @@ from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 
-class Note_{{ note }}(Agent):
+class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     async def setup(self):
         ##missing attribute for state of song
         {%- for behav in behavs %}
