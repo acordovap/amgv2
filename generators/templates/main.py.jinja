@@ -30,12 +30,14 @@ if __name__ == "__main__":
     {%- endfor %}
     {%- endfor %}
     {%- endfor %}
-
     # FLAG for start receiving messages on song agents?
-    while True:
+
+    keepgoing = True
+    while keepgoing:
         try:
-            # falta poner wait de songs
+            keepgoing = not all(i.presence.state.show == PresenceShow.AWAY for i in s)
             time.sleep(1)
         except KeyboardInterrupt:
             break
     quit_spade()
+    print("FINISHED> check ./out")
