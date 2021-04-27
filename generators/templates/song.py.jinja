@@ -76,6 +76,10 @@ class SReceiveState(State):
             f_track = self.agent.get(p_trak+"_track")
             isok = True
             for i in p_bars:
+                ## falta checar que exite esa barra, que no de indexout
+                if not i < len(f_track):
+                    isok = False
+                    break
                 if not f_track[i].place_notes(p_notes, p_duration):
                     isok = False
                     break
