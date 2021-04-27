@@ -18,11 +18,12 @@ music_grammar = r"""
 class TreeToCode(Transformer):
     def msg(self, bars, duration):
         out=""
+        minspace="                    "
         if bars==".":
             print("add for all available")
         else:
             #out += "nv = self.agent.get(\"n_v\") \n"
-            out += "msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
+            out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
         return out
 
 parser = Lark(music_grammar, parser='lalr', propagate_positions=False, maybe_placeholders=False, transformer=TreeToCode())
