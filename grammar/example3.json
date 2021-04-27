@@ -14,7 +14,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "cmd0"
+                                "b_cmd": "(0 8)"
                             }
                         ]
                     }
@@ -28,7 +28,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "cmd0"
+                                "b_cmd": "(0 8)"
                             }
                         ]
                     }
