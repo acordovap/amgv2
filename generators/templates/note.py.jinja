@@ -10,7 +10,7 @@ from spade.message import Message
 
 class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     async def setup(self):
-        ##missing attribute for state of song
+        self.set("last_know_status", "")
         {%- for behav in behavs %}
         self.add_behaviour(self.{{ behav["b_name"] }}())
         {%- endfor %}
@@ -19,14 +19,14 @@ class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     class {{ behav["b_name"] }}(CyclicBehaviour):
         async def run(self):
             contacts = self.presence.get_contacts()
-            #check song online and chat, check state differ from last
-                # insert lark result?
-            # for i in range(CFG.no_songs): # no deeded
-                # if contacts[aioxmpp.JID.fromstr("s_" + i.lower() + CFG.XMPP_SERVER)]["presence"].show == PresenceShow.CHAT:
-                    # msg = Message(to="n_" + i.lower() + CFG.XMPP_SERVER)     # Instantiate the message
-                    # msg.set_metadata("performative", "notepitch")  # Set the "notes" FIPA performative
-                    # msg.body = self.agent.name.split("_")[1]                    # Set the message content
-                    # await self.send(msg)
-                print("sending msg")
-                await asyncio.sleep(random.randint(1, 10)/1000)
+            cntct = contacts[aioxmpp.JID.fromstr("{{ song }}" + CFG.XMPP_SERVER)]["presence"]
+            if cntct.show == PresenceShow.CHAT:
+                if cntct.status.any() != self.agent.get("last_know_status"):
+                    self.agent.set("last_know_status", cntct.status.any())
+                    msg = Message(to="{{ song }}".lower() + CFG.XMPP_SERVER)
+                    msg.set_metadata("performative", "{{ track }}")
+                    ## fixed, change for lark results ##
+                    msg.body = '[ ["{{ note }}"], [0], 8 ]'
+                    await self.send(msg)
+            await asyncio.sleep(random.randint(1, 10)/1000)
     {% endfor %}
