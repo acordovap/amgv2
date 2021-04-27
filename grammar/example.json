@@ -3,7 +3,7 @@
         "s_name": "s0",
         "s_tempo": 120,
         "s_key_signature": "C",
-        "s_time_signature": [2,3],
+        "s_time_signature": [7,8],
         "s_progressions": ["I", "II"],
         "s_tracks": [
             {
