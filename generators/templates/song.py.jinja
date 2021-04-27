@@ -10,8 +10,11 @@ from mingus.containers import NoteContainer
 from mingus.containers import Bar
 from mingus.containers import Track
 from mingus.containers import Composition
+from mingus.extra import lilypond
+from mingus.midi import midi_file_out
 import asyncio
 import ast
+import re
 
 S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
@@ -33,7 +36,7 @@ class Song_{{ song["s_name"] }}(Agent):
         self.set("{{ track["t_name"] }}_template", {{ track["t_name"] }}_template)
         {%- endfor %}
         self.add_behaviour(fsm, {%- for track in song["s_tracks"] %} {{ track["t_name"] }}_template {{ "|" if not loop.last}} {%- endfor %})
-        # self.add_behaviour(fsm)
+        self.add_behaviour(fsm)
 
 class SongBehaviour(FSMBehaviour):
     async def on_start(self):
@@ -61,7 +64,7 @@ class SReceiveState(State):
         self.agent.presence.set_presence(status="[ " + attrs + ", [" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
 
     async def run(self):
-        print(self.agent.presence.status) # To be removed
+        # print(self.agent.presence.status) # To be removed
         self.set_next_state(S_RECEIVE)
         msg = await self.receive()
         if msg:
@@ -78,6 +81,7 @@ class SReceiveState(State):
                     break
             if isok:
                 self.agent.set(p_trak+"_track", f_track) # updating track
+                # print(str(self.agent.jid).split("@")[0] + ">" + str(self.agent.get(p_trak+"_track")))
                 isfinished = True
                 {%- for track in song["s_tracks"] %}
                 tt = self.agent.get("{{ track["t_name"] }}_track")
@@ -94,20 +98,49 @@ class SReceiveState(State):
 class SPublishSongState(State):
     async def on_start(self):
         self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.DND))
-        self.agent.presence.set_presence(status="publishing")
 
     async def run(self):
-        # TODO
-        print("publishing")
-        self.set_next_state(S_PUBLISH_SONG)
+        print(str(self.agent.jid).split("@")[0] + "> " + "publishing")
 
+        c = Composition()
+        c.set_author("amgv2")
+        c.set_title(CFG.OUTPUT_PREFIX + self.agent.name)
+        {%- for track in song["s_tracks"] %}
+        c.add_track(self.agent.get("{{ track["t_name"] }}_track"))
+        {%- endfor %}
+        midi_file_out.write_Composition(CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name+".mid", c, {{ song["s_tempo"] }})
+        l = lilypond.from_Composition(c)
+        l2 = l
+        dd = {"0":"zero", "1":"one", "2":"two", "3":"three", "4":"four", "5":"five", "6":"six", "7":"seven", "8":"eight", "9":"nine"}
+        {%- for track in song["s_tracks"] %}
+        tn = "{{ track["t_name"] }}"
+        for item in dd.keys():
+            tn = re.sub(item, dd[item], tn)
+        l2 = l2.replace("{ {", tn + " = {x {x", 1)
+        # missing attr for selection of cleff ('treble', 'bass')
+        # despues de "{x {x" poner " \clef treble "
+        {%- endfor %}
+        l2 = l2.replace("{x {x", "{ {")
+        x1 = "  \\score { \\new PianoStaff << \\set PianoStaff.instrumentName = #\"Piano  \" "
+        x2 = ""
+        {%- for track in song["s_tracks"] %}
+        tn = "{{ track["t_name"] }}"
+        for item in dd.keys():
+            tn = re.sub(item, dd[item], tn)
+        x2 += " \\new Staff = \"x\" \\"+tn+"   "
+        {%- endfor %}
+        x3 = " >> \\layout { }  }"
+        # print("<lilipond-"+CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name+">\n"+l)
+        # print("<lilipond-"+CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name+">\n"+l2+x1+x2+x3)
+        lilypond.to_pdf(l2+x1+x2+x3, CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name)
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
+        self.set_next_state(S_FINISHED)
 
 class SFinishedState(State):
     async def on_start(self):
         self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
-        self.agent.presence.set_presence(status="finishing")
 
     async def run(self):
-        # TODO
-        print("finished")
+        while await self.receive():
+            pass
         self.set_next_state(S_FINISHED)

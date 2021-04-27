@@ -5,7 +5,7 @@ import json
 file_loader = FileSystemLoader('generators/templates')
 env = Environment(loader=file_loader)
 
-with open("grammar/example.json", "r") as read_file:
+with open("grammar/example3.json", "r") as read_file:
     jdata = json.load(read_file)
 
 v = validator.validateJson(jdata)
