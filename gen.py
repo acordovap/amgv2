@@ -1,5 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 from grammar import validator
+from grammar import amglang
 import json
 
 file_loader = FileSystemLoader('generators/templates')
@@ -19,6 +20,9 @@ if v:
                 n_list.append(n["n_name"])
                 b_list = []
                 for b in n["n_behavs"]:
+                    # maybe first test all behaviors, not here
+                    newcmd = amglang.test(b["b_cmd"])
+                    b["b_cmd"] = newcmd
                     b_list.append(b)
                 # Generate notes agents
                 template = env.get_template('note.py.jinja')

@@ -10,6 +10,7 @@ from spade.message import Message
 
 class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     async def setup(self):
+        self.set("n_v", "{{ note }}")
         self.set("last_know_status", "")
         {%- for behav in behavs %}
         self.add_behaviour(self.{{ behav["b_name"] }}())
@@ -25,8 +26,7 @@ class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
                     self.agent.set("last_know_status", cntct.status.any())
                     msg = Message(to="{{ song }}".lower() + CFG.XMPP_SERVER)
                     msg.set_metadata("performative", "{{ track }}")
-                    ## fixed, change for lark results ##
-                    msg.body = '[ ["{{ note }}"], [0], 8 ]'
+                    {{ behav["b_cmd"] }}
                     await self.send(msg)
             await asyncio.sleep(random.randint(1, 10)/1000)
     {% endfor %}
