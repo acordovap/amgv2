@@ -5,6 +5,13 @@ from spade.behaviour import FSMBehaviour, State
 from spade.agent import Agent
 from mingus.containers import Track
 from spade.template import Template
+from mingus.containers.note import Note
+from mingus.containers import NoteContainer
+from mingus.containers import Bar
+from mingus.containers import Track
+from mingus.containers import Composition
+import asyncio
+import ast
 
 S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
@@ -26,12 +33,18 @@ class Song_{{ song["s_name"] }}(Agent):
         self.set("{{ track["t_name"] }}_template", {{ track["t_name"] }}_template)
         {%- endfor %}
         self.add_behaviour(fsm, {%- for track in song["s_tracks"] %} {{ track["t_name"] }}_template {{ "|" if not loop.last}} {%- endfor %})
-        self.add_behaviour(fsm)
+        # self.add_behaviour(fsm)
 
 class SongBehaviour(FSMBehaviour):
     async def on_start(self):
         {%- for track in song["s_tracks"] %}
-        self.agent.set("{{ track["t_name"] }}_track", Track())
+        {{ track["t_name"] }} = Track()
+        {%- for p in song["s_progressions"] %}
+        {{ track["t_name"] }}.add_bar(Bar("{{ song["s_key_signature"] }}", tuple({{ song["s_time_signature"] }})))
+        {%- endfor %}
+        {%- endfor %}
+        {%- for track in song["s_tracks"] %}
+        self.agent.set("{{ track["t_name"] }}_track", {{ track["t_name"] }})
         {%- endfor %}
         self.agent.set("s_name", "{{ song["s_name"] }}")
         self.agent.set("s_tempo", {{ song["s_tempo"] }})
@@ -48,24 +61,53 @@ class SReceiveState(State):
         self.agent.presence.set_presence(status="[ " + attrs + ", [" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
 
     async def run(self):
-        # TODO
+        print(self.agent.presence.status) # To be removed
         self.set_next_state(S_RECEIVE)
+        msg = await self.receive()
+        if msg:
+            p_trak = msg.get_metadata("performative")
+            lmsg = ast.literal_eval(msg.body)
+            p_notes = lmsg[0]
+            p_bars = lmsg[1]
+            p_duration = lmsg[2]
+            f_track = self.agent.get(p_trak+"_track")
+            isok = True
+            for i in p_bars:
+                if not f_track[i].place_notes(p_notes, p_duration):
+                    isok = False
+                    break
+            if isok:
+                self.agent.set(p_trak+"_track", f_track) # updating track
+                isfinished = True
+                {%- for track in song["s_tracks"] %}
+                tt = self.agent.get("{{ track["t_name"] }}_track")
+                for bb in tt.bars:
+                    if not bb.is_full() or not isfinished:
+                        isfinished = False
+                        break
+                {%- endfor %}
+                if isfinished:
+                    self.set_next_state(S_PUBLISH_SONG)
+                while await self.receive():
+                    pass
 
 class SPublishSongState(State):
     async def on_start(self):
-        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.DND))
         self.agent.presence.set_presence(status="publishing")
 
     async def run(self):
         # TODO
+        print("publishing")
         self.set_next_state(S_PUBLISH_SONG)
 
 
 class SFinishedState(State):
     async def on_start(self):
-        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
         self.agent.presence.set_presence(status="finishing")
 
     async def run(self):
         # TODO
+        print("finished")
         self.set_next_state(S_FINISHED)
