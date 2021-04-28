@@ -64,7 +64,6 @@ class SReceiveState(State):
         self.agent.presence.set_presence(status="[ " + attrs + ", [" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
 
     async def run(self):
-        # print(self.agent.presence.status) # To be removed
         self.set_next_state(S_RECEIVE)
         msg = await self.receive()
         if msg:
@@ -76,7 +75,6 @@ class SReceiveState(State):
             f_track = self.agent.get(p_trak+"_track")
             isok = True
             for i in p_bars:
-                ## falta checar que exite esa barra, que no de indexout
                 if not i < len(f_track):
                     isok = False
                     break
@@ -85,7 +83,6 @@ class SReceiveState(State):
                     break
             if isok:
                 self.agent.set(p_trak+"_track", f_track) # updating track
-                # print(str(self.agent.jid).split("@")[0] + ">" + str(self.agent.get(p_trak+"_track")))
                 isfinished = True
                 {%- for track in song["s_tracks"] %}
                 tt = self.agent.get("{{ track["t_name"] }}_track")
@@ -117,12 +114,10 @@ class SPublishSongState(State):
         l2 = l
         dd = {"0":"zero", "1":"one", "2":"two", "3":"three", "4":"four", "5":"five", "6":"six", "7":"seven", "8":"eight", "9":"nine"}
         {%- for track in song["s_tracks"] %}
-        tn = "{{ track["t_name"] }}"
+        tn = "{{ track["t_name"] }} = {x {x \clef {{ track["t_clef"] }}"
         for item in dd.keys():
             tn = re.sub(item, dd[item], tn)
-        l2 = l2.replace("{ {", tn + " = {x {x", 1)
-        # missing attr for selection of cleff ('treble', 'bass')
-        # despues de "{x {x" poner " \clef treble "
+        l2 = l2.replace("{ {", tn, 1)
         {%- endfor %}
         l2 = l2.replace("{x {x", "{ {")
         x1 = "  \\score { \\new PianoStaff << \\set PianoStaff.instrumentName = #\"Piano  \" "
