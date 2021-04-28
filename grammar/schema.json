@@ -114,6 +114,12 @@
                 },
                 {
                     "type": "array",
+                    "items": { "$ref": "#/definitions/t_clef" },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                {
+                    "type": "array",
                     "items": { "$ref": "#/definitions/t_notes" },
                     "minItems": 1
                 }
@@ -125,6 +131,16 @@
                 "t_name": { "type": "string" }
             },
             "required": ["t_name"]
+        },
+        "t_clef": {
+            "type": "object",
+            "properties": {
+                "t_clef": {
+                    "type": "string",
+                    "enum": ["bass", "treble", "alto"]
+                }
+            },
+            "required": ["t_clef"]
         },
         "t_notes": {
             "type": "object",

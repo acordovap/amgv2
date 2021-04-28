@@ -8,6 +8,7 @@
         "s_tracks": [
             {
                 "t_name": "t0",
+                "t_clef": "treble",
                 "t_notes": [
                     {
                         "n_name": "C-5",
@@ -31,6 +32,7 @@
             },
             {
                 "t_name": "t1",
+                "t_clef": "bass",
                 "t_notes": [
                     {
                         "n_name": "F-5",
