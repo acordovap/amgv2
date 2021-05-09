@@ -1,7 +1,7 @@
 [
     {
         "s_name": "s0",
-        "s_tempo": 120,
+        "s_tempo": 60,
         "s_key_signature": "C",
         "s_time_signature": [1,2],
         "s_progressions": ["I"],
@@ -32,14 +32,14 @@
             },
             {
                 "t_name": "t1",
-                "t_clef": "bass",
+                "t_clef": "treble",
                 "t_notes": [
                     {
                         "n_name": "F-3",
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(0 16)"
+                                "b_cmd": "(minT 0 16)"
                             }
                         ]
                     }

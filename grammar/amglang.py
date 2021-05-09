@@ -5,24 +5,42 @@ music_grammar = r"""
 
     ?stmt  : msg
 
-    msg    : "(" SBARS NUMBER ")"       -> msg
+    msg    : "(" CHORD? SBARS NUMBER ")"       -> msg
 
-    SBARS  : "."|NUMBER
+    SBARS  : NUMBER
+
+    CHORD  : "majT"|"minT"|"dimT"|"augT"|"susT"
 
     %import common.INT -> NUMBER
     %import common.WS
     %ignore WS
 """
 
-@v_args(inline=True)
 class TreeToCode(Transformer):
-    def msg(self, bars, duration):
+    @v_args(tree=True)
+    def msg(self, tree):
         out=""
         minspace="                    "
-        if bars==".":
-            print("add for all available")
+        # if bars==".":
+        #     print("add for all available")
+        # else:
+            # out += "nv = self.agent.get(\"n_v\") \n"
+            # print("chord")
+            # out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
+        if any(c.type == "CHORD" for c in tree.children):
+            chord, bars, duration = tree.children
+            chordsdict = {
+                "majT": "major_triad",
+                "minT": "minor_triad",
+                "dimT": "diminished_triad",
+                "augT": "augmented_triad",
+                "susT": "suspended_triad"
+            }
+            out += minspace+"raw_note = self.agent.get(\"n_v\").split(\"-\")[0]\n"
+            out += minspace+"c = chords."+chordsdict[chord]+"(raw_note)\n"
+            out += minspace+"msg.body = \'[ \'+" +"str(c)"+ "+\', ["+bars+"], "+duration+" ]\'"
         else:
-            #out += "nv = self.agent.get(\"n_v\") \n"
+            bars, duration = tree.children
             out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
         return out
 

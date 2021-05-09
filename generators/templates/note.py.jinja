@@ -1,12 +1,10 @@
 from shared import config as CFG
-import time
-import asyncio
-import random
 import aioxmpp
 from aioxmpp import PresenceState, PresenceShow
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
+import mingus.core.chords as chords
 
 class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     async def setup(self):
@@ -28,5 +26,4 @@ class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
                     msg.set_metadata("performative", "{{ track }}")
 {{ behav["b_cmd"] }}
                     await self.send(msg)
-            await asyncio.sleep(random.randint(1, 10)/1000)
     {% endfor %}
