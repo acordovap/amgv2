@@ -5,6 +5,8 @@ from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 import mingus.core.chords as chords
+import random
+import ast
 
 class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
     async def setup(self):
