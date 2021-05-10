@@ -60,7 +60,7 @@ class SReceiveState(State):
         self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
         ts = [str(i) for i in self.agent.get("s_time_signature")]
         p = [str(i) for i in self.agent.get("s_progressions")]
-        attrs = "[" + self.agent.get("s_name")+", "+str(self.agent.get("s_tempo"))+", "+self.agent.get("s_key_signature")+", ["+", ".join(ts)+"], ["+", ".join(p)+ "]]"
+        attrs = "[\'" + self.agent.get("s_name")+"\', "+str(self.agent.get("s_tempo"))+", \'"+self.agent.get("s_key_signature")+"\', ["+", ".join(ts)+"], [\'"+"\', \'".join(p)+ "\']]"
         self.agent.presence.set_presence(status="[ " + attrs + ", [" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
 
     async def run(self):
