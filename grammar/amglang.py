@@ -7,7 +7,7 @@ music_grammar = r"""
 
     msg    : "(" CHORD? SBARS NUMBER ")"       -> msg
 
-    SBARS  : NUMBER
+    SBARS  : NUMBER|"."
 
     CHORD  : "majT"|"minT"|"dimT"|"augT"|"susT"
 
@@ -21,12 +21,7 @@ class TreeToCode(Transformer):
     def msg(self, tree):
         out=""
         minspace="                    "
-        # if bars==".":
-        #     print("add for all available")
-        # else:
-            # out += "nv = self.agent.get(\"n_v\") \n"
-            # print("chord")
-            # out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
+        tab="    "
         if any(c.type == "CHORD" for c in tree.children):
             chord, bars, duration = tree.children
             chordsdict = {
@@ -36,12 +31,22 @@ class TreeToCode(Transformer):
                 "augT": "augmented_triad",
                 "susT": "suspended_triad"
             }
-            out += minspace+"raw_note = self.agent.get(\"n_v\").split(\"-\")[0]\n"
-            out += minspace+"c = chords."+chordsdict[chord]+"(raw_note)\n"
-            out += minspace+"msg.body = \'[ \'+" +"str(c)"+ "+\', ["+bars+"], "+duration+" ]\'"
+            out += minspace+"raw_note = self.agent.get(\"n_v\").split(\"-\")[0]"+"\n"
+            out += minspace+"c = chords."+chordsdict[chord]+"(raw_note)"+"\n"
+            if bars==".":
+                out += minspace+"lstatus = ast.literal_eval(self.agent.get(\"last_know_status\"))"+"\n"
+                out += minspace+"i = random.randint(0, len(lstatus[0][4])-1)"+"\n"
+                out += minspace+"msg.body = \'[ \'+" +"str(c)"+ "+\', ["+"\'+str(i)+\'"+"], "+duration+" ]\'"
+            else:
+                out += minspace+"msg.body = \'[ \'+" +"str(c)"+ "+\', ["+bars+"], "+duration+" ]\'"
         else:
             bars, duration = tree.children
-            out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
+            if bars==".":
+                out += minspace+"lstatus = ast.literal_eval(self.agent.get(\"last_know_status\"))"+"\n"
+                out += minspace+"i = random.randint(0, len(lstatus[0][4])-1)"+"\n"
+                out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+"\'+str(i)+\'"+"], "+duration+" ]\'"
+            else:
+                out += minspace+"msg.body = \'[ [\"\'+" +"self.agent.get(\"n_v\")"+ "+\'\"], ["+bars+"], "+duration+" ]\'"
         return out
 
 parser = Lark(music_grammar, parser='lalr', propagate_positions=False, maybe_placeholders=False, transformer=TreeToCode())

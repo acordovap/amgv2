@@ -4,7 +4,7 @@
         "s_tempo": 60,
         "s_key_signature": "C",
         "s_time_signature": [1,2],
-        "s_progressions": ["I"],
+        "s_progressions": ["I", "II"],
         "s_tracks": [
             {
                 "t_name": "t0",
@@ -15,7 +15,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(0 16)"
+                                "b_cmd": "(. 16)"
                             }
                         ]
                     },
@@ -24,7 +24,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(0 8)"
+                                "b_cmd": "(. 8)"
                             }
                         ]
                     }
@@ -39,7 +39,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(minT 0 16)"
+                                "b_cmd": "(minT . 2)"
                             }
                         ]
                     }
