@@ -15,7 +15,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(. 16)"
+                                "b_cmd": "(x 16)"
                             }
                         ]
                     },
@@ -24,7 +24,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(. 8)"
+                                "b_cmd": "(x 8)"
                             }
                         ]
                     }
@@ -39,7 +39,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(minT . 2)"
+                                "b_cmd": "(minT x 2)"
                             }
                         ]
                     }
