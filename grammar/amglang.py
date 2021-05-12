@@ -1,15 +1,17 @@
 from lark import Lark, Transformer, v_args
 
 music_grammar = r"""
-    ?start : stmt
+    ?start      : stmt
 
-    ?stmt  : msg
+    ?stmt       : msg
 
-    msg    : "(" CHORD? SBARS NUMBER ")"       -> msg
+    msg         : "(" CHORD? SBARS TIME ")"       -> msg
 
-    SBARS  : NUMBER|"x"
+    SBARS       : NUMBER|"x"
 
-    CHORD  : "majT"|"minT"|"dimT"|"augT"|"susT"
+    TIME        : NUMBER|"x"|"F"
+
+    CHORD       : "majT"|"minT"|"dimT"|"augT"|"susT"
 
     %import common.INT -> NUMBER
     %import common.WS
@@ -39,14 +41,25 @@ class TreeToCode(Transformer):
         else:
             bars, duration = tree.children
             n = "[\"\'+self.agent.get(\"n_v\")+\'\"]"
-        # from here 'bars' and 'duration' are set, as well as 'n'
+        ### from here 'bars' and 'duration' are set, as well as 'n' ###
         if bars == "x":
             out += minspace+"lstatus = ast.literal_eval(self.agent.get(\"last_know_status\"))"+"\n"
             out += minspace+"i = random.randint(0, len(lstatus[0][4])-1)"+"\n"
             b = "\'+str(i)+\'"
         else:
             b = bars
-        d = duration
+
+        if duration == "x": # generate a time that matches with denominator bar
+            out += minspace+"lstatus = ast.literal_eval(self.agent.get(\"last_know_status\"))"+"\n"
+            out += minspace+"d = lstatus[0][3][1]"+"\n"
+            d = "\'+str(d)+\'"
+            pass
+        elif duration == "F": # generate a time that matches with bar size
+            out += minspace+"lstatus = ast.literal_eval(self.agent.get(\"last_know_status\"))"+"\n"
+            out += minspace+"d = lstatus[0][3][1]/lstatus[0][3][0]"+"\n"
+            d = "\'+str(d)+\'"
+        else:
+            d = duration
         out += minspace+"msg.body = \'[" +n+ ", [" +b+ "], " +d+ " ]\'"
         return out
 
