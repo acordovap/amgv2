@@ -3,7 +3,7 @@ from grammar import validator
 from grammar import amglang
 import json
 
-file_loader = FileSystemLoader('generators/templates')
+file_loader = FileSystemLoader('templates')
 env = Environment(loader=file_loader)
 
 with open("grammar/example3.json", "r") as read_file:
