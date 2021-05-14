@@ -4,7 +4,7 @@
         "s_tempo": 60,
         "s_key_signature": "C",
         "s_time_signature": [3,4],
-        "s_progressions": ["I", "II"],
+        "s_progressions": ["I", "II", "I", "I", "I"],
         "s_tracks": [
             {
                 "t_name": "t0",

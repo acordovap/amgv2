@@ -11,6 +11,24 @@ from agents.{{ song["s_name"]+"_"+track["t_name"]+"_"+note["n_name"].replace('-'
 {%- endfor %}
 import time
 from spade import quit_spade
+from spade.agent import Agent
+from spade.behaviour import OneShotBehaviour
+from spade.message import Message
+
+class SyncAgent(Agent):
+    async def setup(self):
+        self.b = self.InformBehav()
+        self.add_behaviour(self.b)
+
+    class InformBehav(OneShotBehaviour):
+        async def run(self):
+            {%- for song in songs %}
+            msg = Message(to="{{ song["s_name"] }}"+CFG.XMPP_SERVER)
+            msg.set_metadata("performative", "sync")
+            msg.body = "start"
+            await self.send(msg)
+            {%- endfor %}
+            await self.agent.stop()
 
 if __name__ == "__main__":
     # init songs
@@ -30,12 +48,15 @@ if __name__ == "__main__":
     {%- endfor %}
     {%- endfor %}
     {%- endfor %}
-    # FLAG for start receiving messages on song agents?
+
+    # init syncagent
+    syncagent = SyncAgent("sync"+CFG.XMPP_SERVER, ".")
+    syncagent.start()
 
     keepgoing = True
     while keepgoing:
         try:
-            keepgoing = not all(i.presence.state.show == PresenceShow.AWAY for i in s)
+            keepgoing = not all(i.presence.state.show == PresenceShow.XA for i in s)
             time.sleep(1)
         except KeyboardInterrupt:
             break

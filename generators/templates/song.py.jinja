@@ -26,6 +26,7 @@ c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message
 c_handler.setFormatter(c_format)
 logger.addHandler(c_handler)
 
+S_SYNC          = "S_SYNC"
 S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
 S_FINISHED      = "S_FINISHED"
@@ -33,20 +34,24 @@ S_FINISHED      = "S_FINISHED"
 class Song_{{ song["s_name"] }}(Agent):
     async def setup(self):
         fsm = SongBehaviour()
-        fsm.add_state(name=S_RECEIVE, state=SReceiveState(), initial=True)
+        fsm.add_state(name=S_SYNC, state=SSyncState(), initial=True)
+        fsm.add_state(name=S_RECEIVE, state=SReceiveState())
         fsm.add_state(name=S_PUBLISH_SONG, state=SPublishSongState())
         fsm.add_state(name=S_FINISHED, state=SFinishedState())
+        fsm.add_transition(source=S_SYNC, dest=S_SYNC)
+        fsm.add_transition(source=S_SYNC, dest=S_RECEIVE)
         fsm.add_transition(source=S_RECEIVE, dest=S_RECEIVE)
         fsm.add_transition(source=S_RECEIVE, dest=S_PUBLISH_SONG)
         fsm.add_transition(source=S_PUBLISH_SONG, dest=S_FINISHED)
         fsm.add_transition(source=S_FINISHED, dest=S_FINISHED)
+        sync_template = Template()
+        sync_template.set_metadata("performative", "sync")
         {%- for track in song["s_tracks"] %}
         {{ track["t_name"] }}_template = Template()
         {{ track["t_name"] }}_template.set_metadata("performative", "{{ track["t_name"] }}")
         self.set("{{ track["t_name"] }}_template", {{ track["t_name"] }}_template)
         {%- endfor %}
-        self.add_behaviour(fsm, {%- for track in song["s_tracks"] %} {{ track["t_name"] }}_template {{ "|" if not loop.last}} {%- endfor %})
-        self.add_behaviour(fsm)
+        self.add_behaviour(fsm, {%- for track in song["s_tracks"] %} {{ track["t_name"] }}_template {{ "|" if not loop.last}} {%- endfor %}| sync_template)
 
 class SongBehaviour(FSMBehaviour):
     async def on_start(self):
@@ -65,13 +70,25 @@ class SongBehaviour(FSMBehaviour):
         self.agent.set("s_time_signature", {{ song["s_time_signature"] }})
         self.agent.set("s_progressions", {{ song["s_progressions"] }})
 
+class SSyncState(State):
+    async def on_start(self):
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.DND))
+
+    async def run(self):
+        self.set_next_state(S_SYNC)
+        msg = await self.receive()
+        if msg:
+            if msg.get_metadata("performative")=="sync" and msg.body=="start":
+                logger.info("start receiving notes messages")
+                self.set_next_state(S_RECEIVE)
+
 class SReceiveState(State):
     async def on_start(self):
-        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
         ts = [str(i) for i in self.agent.get("s_time_signature")]
         p = [str(i) for i in self.agent.get("s_progressions")]
         attrs = "[\'" + self.agent.get("s_name")+"\', "+str(self.agent.get("s_tempo"))+", \'"+self.agent.get("s_key_signature")+"\', ["+", ".join(ts)+"], [\'"+"\', \'".join(p)+ "\']]"
         self.agent.presence.set_presence(status="[ " + attrs + ", [" + {%- for track in song["s_tracks"] %} repr(self.agent.get("{{ track["t_name"] }}_track")) {{ "+\", \"+" if not loop.last }} {%- endfor %} + "] ]")
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.CHAT))
 
     async def run(self):
         self.set_next_state(S_RECEIVE)
@@ -104,12 +121,15 @@ class SReceiveState(State):
                 {%- endfor %}
                 if isfinished:
                     self.set_next_state(S_PUBLISH_SONG)
-                while await self.receive():
-                    pass
+                    fmsg = await self.receive()
+                    while fmsg:
+                        logger.info("message flushed: " + fmsg.body)
+                        fmsg = await self.receive()
             else:
                 logger.info("message declined: " + msg.body)
         else:
-            logger.debug("passing")
+            logger.debug("passing and entering to AWAY state")
+            self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
 
 class SPublishSongState(State):
     async def on_start(self):
@@ -147,12 +167,14 @@ class SPublishSongState(State):
         # print("<lilipond-"+CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name+">\n"+l)
         # print("<lilipond-"+CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name+">\n"+l2+x1+x2+x3)
         lilypond.to_pdf(l2+x1+x2+x3, CFG.OUTPUT_FOLDER+CFG.OUTPUT_PREFIX+self.agent.name)
-        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
+        # flush messages
+        while await self.receive():
+            pass
         self.set_next_state(S_FINISHED)
 
 class SFinishedState(State):
     async def on_start(self):
-        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
+        self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.XA))
 
     async def run(self):
         while await self.receive():

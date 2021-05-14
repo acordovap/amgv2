@@ -21,8 +21,8 @@ class Note_{{ song+'_'+track+'_'+note.replace('-', '') }}(Agent):
         async def run(self):
             contacts = self.presence.get_contacts()
             cntct = contacts[aioxmpp.JID.fromstr("{{ song }}" + CFG.XMPP_SERVER)]["presence"]
-            if cntct.show == PresenceShow.CHAT:
-                if cntct.status.any() != self.agent.get("last_know_status"):
+            if cntct.show == PresenceShow.CHAT or cntct.show == PresenceShow.AWAY:
+                if cntct.status.any() != self.agent.get("last_know_status") or cntct.show == PresenceShow.AWAY:
                     self.agent.set("last_know_status", cntct.status.any())
                     msg = Message(to="{{ song }}".lower() + CFG.XMPP_SERVER)
                     msg.set_metadata("performative", "{{ track }}")
