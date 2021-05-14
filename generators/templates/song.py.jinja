@@ -12,9 +12,19 @@ from mingus.containers import Track
 from mingus.containers import Composition
 from mingus.extra import lilypond
 from mingus.midi import midi_file_out
+import logging
 import asyncio
 import ast
 import re
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+#c_handler = logging.StreamHandler()
+c_handler = logging.FileHandler('./out/'+__name__+'.log')
+c_handler.setLevel(logging.INFO)
+c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_handler.setFormatter(c_format)
+logger.addHandler(c_handler)
 
 S_RECEIVE       = "S_RECEIVE"
 S_PUBLISH_SONG  = "S_PUBLISH_SONG"
@@ -82,6 +92,7 @@ class SReceiveState(State):
                     isok = False
                     break
             if isok:
+                logger.info("message accepted: " + msg.body)
                 self.agent.set(p_trak+"_track", f_track) # updating track
                 isfinished = True
                 {%- for track in song["s_tracks"] %}
@@ -95,6 +106,10 @@ class SReceiveState(State):
                     self.set_next_state(S_PUBLISH_SONG)
                 while await self.receive():
                     pass
+            else:
+                logger.info("message declined: " + msg.body)
+        else:
+            logger.debug("passing")
 
 class SPublishSongState(State):
     async def on_start(self):
