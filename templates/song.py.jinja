@@ -109,7 +109,7 @@ class SReceiveState(State):
                     isok = False
                     break
             if isok:
-                logger.info("message accepted: " + msg.body)
+                logger.info("message accepted: " + "<"+p_trak+">." + msg.body)
                 self.agent.set(p_trak+"_track", f_track) # updating track
                 isfinished = True
                 {%- for track in song["s_tracks"] %}
@@ -121,14 +121,15 @@ class SReceiveState(State):
                 {%- endfor %}
                 if isfinished:
                     self.set_next_state(S_PUBLISH_SONG)
+                    self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.DND))
                     fmsg = await self.receive()
                     while fmsg:
-                        logger.info("message flushed: " + fmsg.body)
+                        logger.info("message flushed: " + "<"+fmsg.get_metadata("performative")+">." + fmsg.body)
                         fmsg = await self.receive()
             else:
-                logger.info("message declined: " + msg.body)
+                logger.info("message declined: " + "<"+p_trak+">." + msg.body)
         else:
-            logger.debug("passing and entering to AWAY state")
+            logger.info("no message received, entering to AWAY state")
             self.agent.presence.set_presence(state=PresenceState(available=True, show=PresenceShow.AWAY))
 
 class SPublishSongState(State):
