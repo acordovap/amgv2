@@ -15,15 +15,15 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(x 16)"
+                                "b_cmd": "(b 16)"
                             },
                             {
                                 "b_name": "b1",
-                                "b_cmd": "(x 32)"
+                                "b_cmd": "(b 32)"
                             },
                             {
                                 "b_name": "b2",
-                                "b_cmd": "(x x)"
+                                "b_cmd": "(b t)"
                             }
                         ]
                     },
@@ -32,7 +32,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(x 8)"
+                                "b_cmd": "(b 8)"
                             }
                         ]
                     }
@@ -47,7 +47,7 @@
                         "n_behavs": [
                             {
                                 "b_name": "b0",
-                                "b_cmd": "(minT x F)"
+                                "b_cmd": "(b T m)"
                             }
                         ]
                     }
