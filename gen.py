@@ -21,7 +21,7 @@ if v:
                 b_list = []
                 for b in n["n_behavs"]:
                     # maybe first test all behaviors, not here
-                    newcmd = amglang.test(b["b_cmd"])
+                    newcmd = amglang.compile(b["b_cmd"])
                     b["b_cmd"] = newcmd
                     b_list.append(b)
                 # Generate notes agents
